@@ -63,6 +63,8 @@ set.seed(42)
 sample_500 <- ces |> sample_n(500)
 
 proportion_500 <- mean(sample_500$unaffiliated)
+
+proportion_500
 ```
 
 How did the estimate change compared to the sample of 50? What does this suggest about sample size?
