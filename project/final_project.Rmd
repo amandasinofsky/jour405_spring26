@@ -1,0 +1,12 @@
+---
+title: "final_project"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+```{r}
+bestsellers <- read_csv("https://query.data.world/s/yldmbmdlhbl32oyvbus3hx2spvknig?dws=00000")
+```
+There are some columns in the data that I think I could get rid of: dagger, price, ISBN and the columns with links. The columns that I think will be most helpful are the publishers, weeks on bestseller list, date, and author. The data covers the books that made the New York Times Bestseller list from 2011 to 2018. Right now, I am planning on going the route of is there a statistically significant difference in the number of weeks publishers spend on the list over the years. I think the main component will be using the publisher and weeks on list columns. 
