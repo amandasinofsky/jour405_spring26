@@ -3,6 +3,11 @@ title: "final_project"
 output: html_document
 ---
 
+Tests I could run:
+- t-test significance test to see if there is a statistically significant difference in the number of weeks publishers spend on the list over the years
+- effect size to see if the results are meaningful if they end up being significant 
+- z-score for each publisher on the list? does this make sense to do or is it a reach?
+
 ```{r}
 library(tidyverse)
 ```
