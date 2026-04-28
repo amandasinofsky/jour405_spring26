@@ -3,10 +3,22 @@ title: "final_project"
 output: html_document
 ---
 
+Question -- is there a way to remove columns from my data using mutate? I don't remember if we have done that before.
+
 Tests I could run:
 - t-test significance test to see if there is a statistically significant difference in the number of weeks publishers spend on the list over the years
 - effect size to see if the results are meaningful if they end up being significant 
 - z-score for each publisher on the list? does this make sense to do or is it a reach?
+
+Notes from Derek on this ^^
+
+You can use the data column as a proxy for published year, but I think you'll do better focusing on trends over time. So a question like:
+
+"Did publishers' bestseller output change over time?" is a good one. You'll need to have n_books by publisher-year, which measures output; mean_weeks, which measures staying power per book. Then you could use regression to measure whether that has changed for books published by the top 5 publishing houses, for example.
+
+Maybe an easier one is "Are bestsellers staying on the list longer over time?" - again, a regression question using weeks_on_list and review year.
+
+z-scores for publishers are good, but are all of the publishers referred to the same way, or do you need to standardize that data?
 
 ```{r}
 library(tidyverse)
@@ -15,3 +27,30 @@ library(tidyverse)
 bestsellers <- read_csv("https://query.data.world/s/yldmbmdlhbl32oyvbus3hx2spvknig?dws=00000")
 ```
 There are some columns in the data that I think I could get rid of: dagger, price, ISBN and the columns with links. The columns that I think will be most helpful are the publishers, weeks on bestseller list, date, and author. The data covers the books that made the New York Times Bestseller list from 2011 to 2018. Right now, I am planning on going the route of is there a statistically significant difference in the number of weeks publishers spend on the list over the years. I think the main component will be using the publisher and weeks on list columns. 
+
+```{r}
+bestsellers |> summarize(
+  mean_weeks=mean(weeks_on_list)
+)
+```
+^^ is this what you meant by mean_weeks in your notes from last week?
+
+"You'll need to have n_books by publisher-year, which measures output; mean_weeks, which measures staying power per book." -- I am confused on how I would do this? 
+
+```{r}
+bestsellers |>
+  ggplot(aes(x = `date`, y = `weeks_on_list`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "date", y = "weeks on list",
+      )
+```
+I think I am getting somewhere with this but I want to make the intervals on the x axis bigger so it isn't so clustered there. There are also a lot of books that have 0 weeks on the bestseller list so I think that is something to note? 
+
+```{r}
+model <- lm(`weeks_on_list` ~ `date`, data = bestsellers)
+summary(model)
+```
+The really really low R-squared is showing that weeks on the list aren't really trending up or down as time goes on. 
+
+-- Overall I am wondering how to make the data easier to work with: getting rid of columns I don't need, maybe changing the specific dates to either months or years, etc. 
