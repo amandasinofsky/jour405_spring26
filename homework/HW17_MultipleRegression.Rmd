@@ -145,3 +145,5 @@ ggplot(model_comparison, aes(x = reorder(Model, Adjusted_R_squared), y = Adjuste
 Without using the words "multiple regression model", describe how you could use this analysis to cover an election or voter participation story.
 
 This analysis shows that factors like the percent of white people influences voter turnout positively, and percent unemployed influences in negatively. Other factors like income and population don't influence it as much. The percent of people who have a bachelor's or higher also doesn't really influence voter turnout. 
+
+

@@ -3,22 +3,9 @@ title: "final_project"
 output: html_document
 ---
 
-Question -- is there a way to remove columns from my data using mutate? I don't remember if we have done that before.
-
-Tests I could run:
-- t-test significance test to see if there is a statistically significant difference in the number of weeks publishers spend on the list over the years
-- effect size to see if the results are meaningful if they end up being significant 
-- z-score for each publisher on the list? does this make sense to do or is it a reach?
-
-Notes from Derek on this ^^
-
-You can use the data column as a proxy for published year, but I think you'll do better focusing on trends over time. So a question like:
-
 "Did publishers' bestseller output change over time?" is a good one. You'll need to have n_books by publisher-year, which measures output; mean_weeks, which measures staying power per book. Then you could use regression to measure whether that has changed for books published by the top 5 publishing houses, for example.
 
-Maybe an easier one is "Are bestsellers staying on the list longer over time?" - again, a regression question using weeks_on_list and review year.
-
-z-scores for publishers are good, but are all of the publishers referred to the same way, or do you need to standardize that data?
+# Loading the tidyverse and the data that I will be working with. My main question I will seek to answer is: "are bestsellers staying on the list longer over time?" I am looking at data from the New York Times Bestsellers list from 2011 to 2018. 
 
 ```{r}
 library(tidyverse)
@@ -26,31 +13,66 @@ library(tidyverse)
 ```{r}
 bestsellers <- read_csv("https://query.data.world/s/yldmbmdlhbl32oyvbus3hx2spvknig?dws=00000")
 ```
-There are some columns in the data that I think I could get rid of: dagger, price, ISBN and the columns with links. The columns that I think will be most helpful are the publishers, weeks on bestseller list, date, and author. The data covers the books that made the New York Times Bestseller list from 2011 to 2018. Right now, I am planning on going the route of is there a statistically significant difference in the number of weeks publishers spend on the list over the years. I think the main component will be using the publisher and weeks on list columns. 
+### Below, I am calculating the mean weeks on list overall for the data. 
 
 ```{r}
 bestsellers |> summarize(
   mean_weeks=mean(weeks_on_list)
 )
 ```
-^^ is this what you meant by mean_weeks in your notes from last week?
+The mean weeks on the list for the data overall from 2011 to 2018 seems to be pretty expected, indicating a flow of books in and out of appearing on the list. 
 
-"You'll need to have n_books by publisher-year, which measures output; mean_weeks, which measures staying power per book." -- I am confused on how I would do this? 
+## I am looking at this below to see what parts of the data need to be standardized before I can do an analysis of publishers. 
 
 ```{r}
-bestsellers |>
-  ggplot(aes(x = `date`, y = `weeks_on_list`)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, color = "red") +
-  labs(x = "date", y = "weeks on list",
-      )
+bestsellers |> count(publisher)
 ```
-I think I am getting somewhere with this but I want to make the intervals on the x axis bigger so it isn't so clustered there. There are also a lot of books that have 0 weeks on the bestseller list so I think that is something to note? 
+This shows a lot of duplicate publisher names like Delacorte and Delacorte Press, C. Scott and C. Scott Publishing, etc. 
+
+# Putting the date column into an actual date format. 
+```{r}
+write_csv(bestsellers, "bestsellers.csv")
+library(lubridate)
+```
+
+# Making columns for month and year. 
+```{r}
+bestsellers <- read_csv("https://query.data.world/s/yldmbmdlhbl32oyvbus3hx2spvknig?dws=00000") |> mutate(date = mdy(date))
+bestsellers <- bestsellers |> mutate(year = year(date), month = month(date))
+```
+```{r}
+publisher_years <- bestsellers |>
+  mutate(year = year(date)) |>
+  group_by(publisher, year) |>
+  summarize(
+    n_books = n_distinct(title),
+    mean_weeks = mean(weeks_on_list)
+  )
+
+```
+
+My new table called publisher_years simplifies the data into a more workable format, with just the publisher, year, number of books on the list in that year, and the mean weeks on the list for that year. 
+
+# Bar graph comparing mean weeks on lists and year to see if there is a relationship between time and books staying on the list for a longer or shorter time overall.
 
 ```{r}
-model <- lm(`weeks_on_list` ~ `date`, data = bestsellers)
+publisher_years |>
+  ggplot(aes(x = year, y = mean_weeks)) +
+  geom_col()
+```
+
+This is showing that as time goes on books are spending longer on the bestsellers list overall, which is seen especially in 2017 and 2018. 
+
+# Linear regression model predicting mean_weeks based on the year. 
+
+```{r}
+model <- lm(`mean_weeks` ~ `year`, data = publisher_years)
 summary(model)
 ```
-The really really low R-squared is showing that weeks on the list aren't really trending up or down as time goes on. 
 
--- Overall I am wondering how to make the data easier to work with: getting rid of columns I don't need, maybe changing the specific dates to either months or years, etc. 
+I'm not sure that this is the best model for this data, but it seems to show that there is definitely a very statistically significant relationship between time and mean_weeks because of the very small p-value. However, it is a really small adjusted R-squared which isn't a good sign, and indicates that something else was going on to make book stay on the bestsellers list longer. 
+
+## Story pitch
+
+I found that books are spending more time on the bestsellers list in 2018 compared to 2011 with a steady gain in the years from 2011 to 2018. However, I haven't been able to pinpoint why books are staying longer on the list in 2018 than in 2011. I would want to do an investigative story on why books are staying on the list for more weeks over time. I would begin it by thinking about if the general public was now focusing on a few books that became really popular rather than many books having a chance at the list possibly because of the rise of social media and people talking about just some specific books. This could cause some books to dominate if many things are circulating online about them in 2018 more than they would have been in 2011 because social media became a lot more prominent. Some potential problems I may have is how I have worked with the data so far and if there would be a better way to analyze it based on what I am looking to do this story on. As for a reporting plan, I would want to speak with someone at the New York Times to see if they have noticed a change in how long books stay on the list compared to a gradual filtering in and out of different books. I would also need access to social media data in some format that has information on shares or posts about books that are on the bestsellers list and if more posts about the books correlates to more sales of it and therefore more weeks on the list. I don't have all the data that I would need for this investigation in hand right now and would need to rely on social media data or even look into other explanations of the change that I found through this initial analysis. 
+

@@ -38,12 +38,10 @@ There is a much higher percentage of FARMS in Moco MD than in Moco PA. However, 
 Replace the REPLACE_ME value with the correct variable name to create a scatterplot of FARMS percentage vs. math scores for Montgomery County, Md.
 
 ```{r}
-schools |>
-  ggplot(aes(x = `FARMS Pct`, y = `% Met or Exceeded Math Expectations`)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, color = "red") +
-  labs(x = "FARMS Percentage", y = "% Met or Exceeded Math Expectations",
-       title = "Math Scores vs. FARMS Percentage, Montgomery County MD")
+publisher_years |> 
+   ggplot() + 
+  geom_histogram(aes(x = year), binwidth = .1) +
+geom_vline(aes(xintercept = mean_weeks), color = "red", linetype = "dashed", size = 1) +
 ```
 
 Describe what you see. Then compare this scatterplot specifically to the Pennsylvania one: what differences do you notice in the direction, strength, and spread of the relationship? The two counties share a name and are both suburban — what might explain why they look so different?
